@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 func main() {
@@ -36,67 +35,25 @@ func replace(data []byte) []byte {
 	return re.ReplaceAll(data, []byte("$1 $2:latest"))
 }
 
-type version struct {
-	major string
-	minor string
-	patch string
-}
-
-func (v version) String() string {
-	var parts []string
-	if v.major != "" {
-		parts = append(parts, v.major)
-	}
-	if v.minor != "" {
-		parts = append(parts, v.minor)
-
-	}
-	if v.patch != "" {
-		parts = append(parts, v.patch)
-	}
-	return strings.Join(parts, ".")
-}
-
-func possibleNewVersions(ver string) (versions []string) {
-	var major, minor, patch string
-	re := regexp.MustCompile(`(\d+)`)
-	components := re.FindAllString(ver, -1)
-	switch len(components) {
+func possibleNewVersions(ver string) []string {
+	const major, minor, patch = 0, 1, 2
+	v := regexp.MustCompile(`(\d+)`).FindAllString(ver, -1)
+	switch len(v) {
 	case 1:
-		major = components[0]
-		versions = append(versions, bump(major))
+		return []string{bump(v[major])}
 	case 2:
-		major = components[0]
-		versions = append(versions, version{
-			major: bump(major),
-			minor: "0",
-		}.String())
-		minor = components[1]
-		versions = append(versions, version{
-			major: major,
-			minor: bump(minor),
-		}.String())
+		return []string{
+			bump(v[major]) + ".0",
+			v[major] + "." + bump(v[minor]),
+		}
 	case 3:
-		major = components[0]
-		minor = components[1]
-		patch = components[2]
-		versions = append(versions, version{
-			major: bump(major),
-			minor: "0",
-			patch: "0",
-		}.String())
-		versions = append(versions, version{
-			major: major,
-			minor: bump(minor),
-			patch: "0",
-		}.String())
-		versions = append(versions, version{
-			major: major,
-			minor: minor,
-			patch: bump(patch),
-		}.String())
+		return []string{
+			bump(v[major]) + ".0.0",
+			v[major] + "." + bump(v[minor]) + ".0",
+			v[major] + "." + v[minor] + "." + bump(v[patch]),
+		}
 	}
-	return versions
+	return nil
 }
 
 func bump(c string) string {
