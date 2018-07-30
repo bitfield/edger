@@ -63,3 +63,12 @@ func bump(c string) string {
 	}
 	return strconv.Itoa(val + 1)
 }
+
+func latest(v string, tags map[string]struct{}) string {
+	for _, p := range possibleNewVersions(v) {
+		if _, ok := tags[p]; ok {
+			return latest(p, tags)
+		}
+	}
+	return v
+}

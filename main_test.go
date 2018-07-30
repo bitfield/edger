@@ -48,6 +48,14 @@ func TestPossibleNewVersions(t *testing.T) {
 				"3.7.5",
 			},
 		},
+		{
+			input: "1.10.3",
+			wants: []string{
+				"2.0.0",
+				"1.11.0",
+				"1.10.4",
+			},
+		},
 	}
 	for _, tc := range tcs {
 		got := possibleNewVersions(tc.input)
@@ -56,5 +64,20 @@ func TestPossibleNewVersions(t *testing.T) {
 				t.Errorf("possibleNewVersions(%q) = %q, want %q", tc.input, got[i], want)
 			}
 		}
+	}
+}
+
+func TestLatest(t *testing.T) {
+	tags := map[string]struct{}{
+		"latest": struct{}{},
+		"1":      struct{}{},
+		"1.10":   struct{}{},
+		"1.10.3": struct{}{},
+	}
+	input := "1.10.2"
+	want := "1.10.3"
+	got := latest(input, tags)
+	if got != want {
+		t.Errorf("latest(%q) = %q, want %q", input, got, want)
 	}
 }
