@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -37,7 +38,7 @@ func replace(data []byte) []byte {
 
 func possibleNewVersions(ver string) []string {
 	const major, minor, patch = 0, 1, 2
-	v := regexp.MustCompile(`(\d+)`).FindAllString(ver, -1)
+	v := regexp.MustCompile(`\d+`).FindAllString(ver, -1)
 	switch len(v) {
 	case 1:
 		return []string{bump(v[major])}
@@ -71,4 +72,19 @@ func latest(v string, tags map[string]struct{}) string {
 		}
 	}
 	return v
+}
+
+func extractVersions(s string) []string {
+	matches := regexp.MustCompile(`([\d\.]+)`).FindAllString(s, -1)
+	return matches
+}
+
+func replaceVersions(input string) (results []string) {
+	versions := extractVersions(input)
+	for _, v := range versions {
+		for _, nv := range possibleNewVersions(v) {
+			results = append(results, strings.Replace(input, v, nv, 1))
+		}
+	}
+	return results
 }

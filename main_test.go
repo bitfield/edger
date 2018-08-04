@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestReplace(t *testing.T) {
 	input := `
@@ -48,14 +50,6 @@ func TestPossibleNewVersions(t *testing.T) {
 				"3.7.5",
 			},
 		},
-		{
-			input: "1.10.3",
-			wants: []string{
-				"2.0.0",
-				"1.11.0",
-				"1.10.4",
-			},
-		},
 	}
 	for _, tc := range tcs {
 		got := possibleNewVersions(tc.input)
@@ -79,5 +73,46 @@ func TestLatest(t *testing.T) {
 	got := latest(input, tags)
 	if got != want {
 		t.Errorf("latest(%q) = %q, want %q", input, got, want)
+	}
+}
+
+func TestExtractVersions(t *testing.T) {
+	tcs := []struct {
+		input string
+		wants []string
+	}{
+		{
+			input: "1.10.3-alpine3.7",
+			wants: []string{
+				"1.10.3",
+				"3.7",
+			},
+		},
+	}
+	for _, tc := range tcs {
+		got := extractVersions(tc.input)
+		for i, want := range tc.wants {
+			if got[i] != want {
+				t.Errorf("extractVersions(%q) = %q, want %q", tc.input, got[i], want)
+			}
+		}
+	}
+
+}
+
+func TestReplaceVersions(t *testing.T) {
+	input := "1.10.3-foo2.1"
+	wants := []string{
+		"2.0.0-foo2.1",
+		"1.11.0-foo2.1",
+		"1.10.4-foo2.1",
+		"1.10.3-foo3.0",
+		"1.10.3-foo2.2",
+	}
+	got := replaceVersions(input)
+	for i, want := range wants {
+		if want != got[i] {
+			t.Errorf("replaceVersions() = %q, want %q", got, want[i])
+		}
 	}
 }
