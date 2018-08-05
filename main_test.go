@@ -66,10 +66,10 @@ func TestLatest(t *testing.T) {
 		"latest": struct{}{},
 		"1":      struct{}{},
 		"1.10":   struct{}{},
-		"1.10.3": struct{}{},
+		"1.11.0": struct{}{},
 	}
 	input := "1.10.2"
-	want := "1.10.3"
+	want := "1.11.0"
 	got := latest(input, tags)
 	if got != want {
 		t.Errorf("latest(%q) = %q, want %q", input, got, want)
@@ -113,6 +113,25 @@ func TestReplaceVersions(t *testing.T) {
 	for i, want := range wants {
 		if want != got[i] {
 			t.Errorf("replaceVersions() = %q, want %q", got, want[i])
+		}
+	}
+}
+
+func TestParseTags(t *testing.T) {
+	data := []byte(`[{"layer": "", "name": "latest"}, {"layer": "", "name": "1"}, {"layer": "", "name": "1-alpine"}, {"layer": "", "name": "1-alpine-perl"}, {"layer": "", "name": "1-perl"}, {"layer": "", "name": "1.10"}, {"layer": "", "name": "1.10-alpine"}]`)
+	wants := []string{
+		"latest",
+		"1",
+		"1-alpine",
+		"1-alpine-perl",
+		"1-perl",
+		"1.10",
+		"1.10-alpine",
+	}
+	got := parseTags(data)
+	for i, want := range wants {
+		if got[i] != want {
+			t.Errorf("parseTags() = %q, want %q", got[i], want)
 		}
 	}
 }

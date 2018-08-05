@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -87,4 +88,18 @@ func replaceVersions(input string) (results []string) {
 		}
 	}
 	return results
+}
+
+func parseTags(data []byte) (tags []string) {
+	var rawtags []struct {
+		Name string `json:"name"`
+	}
+	err := json.Unmarshal(data, &rawtags)
+	if err != nil {
+		panic(err)
+	}
+	for _, tag := range rawtags {
+		tags = append(tags, tag.Name)
+	}
+	return tags
 }
