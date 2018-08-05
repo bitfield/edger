@@ -66,10 +66,12 @@ func bump(c string) string {
 	return strconv.Itoa(val + 1)
 }
 
-func latest(v string, tags map[string]struct{}) string {
+func latest(v string, tags []string) string {
 	for _, p := range possibleNewVersions(v) {
-		if _, ok := tags[p]; ok {
-			return latest(p, tags)
+		for _, t := range tags {
+			if p == t {
+				return latest(p, tags)
+			}
 		}
 	}
 	return v
@@ -102,4 +104,14 @@ func parseTags(data []byte) (tags []string) {
 		tags = append(tags, tag.Name)
 	}
 	return tags
+}
+
+func replaceWithLatestExistingVersion(input string, tags []string) string {
+	for _, v := range extractVersions(input) {
+		lv := latest(v, tags)
+		if lv != v {
+			return strings.Replace(input, v, lv, 1)
+		}
+	}
+	return input
 }

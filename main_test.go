@@ -9,13 +9,13 @@ func TestReplace(t *testing.T) {
 from golang:1.10.2-alpine3.7 AS build
 WORKDIR /
 FROM foobar
-FROM scratch:1.10 as foo
+FROM bogus:1.10 as foo
 `
 	want := `
 from golang:latest AS build
 WORKDIR /
 FROM foobar
-FROM scratch:latest as foo
+FROM bogus:latest as foo
 `
 	got := string(replace([]byte(input)))
 	if got != want {
@@ -62,11 +62,11 @@ func TestPossibleNewVersions(t *testing.T) {
 }
 
 func TestLatest(t *testing.T) {
-	tags := map[string]struct{}{
-		"latest": struct{}{},
-		"1":      struct{}{},
-		"1.10":   struct{}{},
-		"1.11.0": struct{}{},
+	tags := []string{
+		"latest",
+		"1",
+		"1.10",
+		"1.11.0",
 	}
 	input := "1.10.2"
 	want := "1.11.0"
@@ -133,5 +133,20 @@ func TestParseTags(t *testing.T) {
 		if got[i] != want {
 			t.Errorf("parseTags() = %q, want %q", got[i], want)
 		}
+	}
+}
+
+func TestReplaceWithLatestExistingVersion(t *testing.T) {
+	input := "golang:1.10.3"
+	tags := []string{
+		"1.10.2",
+		"1.10.3",
+		"1.11.0",
+		"1.11.1",
+	}
+	want := "golang:1.11.1"
+	got := replaceWithLatestExistingVersion(input, tags)
+	if got != want {
+		t.Errorf("replaceWithLatestExistingVersion() = %q, want %q", got, want)
 	}
 }
